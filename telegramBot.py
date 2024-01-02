@@ -25,7 +25,7 @@ def BlackListCheck(MessageCheck):
 def send_start(message):
     markup = types.InlineKeyboardMarkup()
     item1 = types.InlineKeyboardButton("🔄RESTART🔄", callback_data='restart_pc')
-    item2 = types.InlineKeyboardButton("📍OFF📍", callback_data='off_pc') 
+    item2 = types.InlineKeyboardButton("📍OFF📍", callback_data='off_pc')
     item3 = types.InlineKeyboardButton("🌐INTERNET🌐", callback_data='open_site') 
     item4 = types.InlineKeyboardButton("💻PROGRAM💻", callback_data='open_program') 
 
@@ -40,8 +40,8 @@ def RestartPc(message):
         os.system('shutdown /r /t 0')
         dt_now = datetime.datetime.now()
         bot.send_message(message.chat.id,f'''PC RESTART_________
-    TIME: {dt_now.time()}_________
-    DATE: {datetime.date.today()}_________''')
+TIME: {dt_now.time()}
+DATE: {datetime.date.today()}''')
 
 @bot.message_handler(commands=['off_pc'])
 def OffPc(message):
@@ -49,8 +49,8 @@ def OffPc(message):
         os.system('shutdown /s /t 0')
         dt_now = datetime.datetime.now()
         bot.send_message(message.chat.id,f'''PC OFF_________
-    TIME: {dt_now.time()}_________
-    DATE: {datetime.date.today()}_________''')
+TIME: {dt_now.time()}
+DATE: {datetime.date.today()}''')
 
 @bot.message_handler(commands=['open_program'])
 def OpenProgram_and_Mp3(message):
