@@ -3,13 +3,19 @@ import telebot
 from telebot import types
 import datetime
 import configparser
-
-bot = telebot.TeleBot('6479990017:AAEc3cVuUcp-MLzS1SePGYZHg-2L96Xg0wI',parse_mode=None)
-ValCommands = 'no_commands'
 config = configparser.ConfigParser()
+ValCommands = 'no_commands'
+config_path = 'C:/FESTASHKA/config.ini'
+config.read(config_path)
+TOKEN = config['Config']['TOKEN_BOT']
+src = config['Settings']['default_path']
+Error_permission = False
+
+bot = telebot.TeleBot(TOKEN,parse_mode=None)
+
 
 def BlackListCheck(MessageCheck):
-    config.read("config.ini")
+    config.read(config_path)
     BlackList = config['Config']['black_list'].split(',')
     for BlackUser in BlackList:
         if MessageCheck.from_user.username == BlackUser:
@@ -23,14 +29,22 @@ def BlackListCheck(MessageCheck):
 
 @bot.message_handler(commands=['start'])
 def send_start(message):
-    markup = types.InlineKeyboardMarkup()
-    item1 = types.InlineKeyboardButton("🔄RESTART🔄", callback_data='restart_pc')
-    item2 = types.InlineKeyboardButton("📍OFF📍", callback_data='off_pc')
-    item3 = types.InlineKeyboardButton("🌐INTERNET🌐", callback_data='open_site') 
-    item4 = types.InlineKeyboardButton("💻PROGRAM💻", callback_data='open_program') 
+    # markup = types.InlineKeyboardMarkup()
+    # item1 = types.InlineKeyboardButton("🔄RESTART🔄", callback_data='restart_pc')
+    # item2 = types.InlineKeyboardButton("📍OFF📍", callback_data='off_pc')
+    # item3 = types.InlineKeyboardButton("🌐INTERNET🌐", callback_data='open_site') 
+    # item4 = types.InlineKeyboardButton("💻PROGRAM💻", callback_data='open_program') 
+
+    markup = types.ReplyKeyboardMarkup()
+    item1 = types.KeyboardButton("🔄RESTART🔄")
+    item2 = types.KeyboardButton("📍OFF📍")
+    item3 = types.KeyboardButton("🌐INTERNET🌐") 
+    item4 = types.KeyboardButton("💻PROGRAM💻") 
+    item5 = types.KeyboardButton("📦FOLDER_MANAGER📦") 
 
     markup.add(item1, item2)
     markup.add(item3, item4)
+    markup.add(item5)
     
     bot.send_message(message.chat.id,'Hello, I,m create this is bot, to see the commands write / or tap on the button',reply_markup=markup)
 
@@ -55,9 +69,9 @@ DATE: {datetime.date.today()}''')
 @bot.message_handler(commands=['open_program'])
 def OpenProgram_and_Mp3(message):
     if BlackListCheck(message):
-        global ValCommands,markup
-
-        ValCommands = 'Open_program'
+        # global ValCommands,markup
+        # ValCommands = 'Open_program'
+        global markup
 
         markup = types.InlineKeyboardMarkup()
         item1 = types.InlineKeyboardButton("💙Telegram💙", callback_data='Telegram')
@@ -79,8 +93,8 @@ def OpenProgram_and_Mp3(message):
 @bot.message_handler(commands=['open_site'])
 def OpenSite(message):
     if BlackListCheck(message):
-        global ValCommands
-        ValCommands = 'OpenSite'
+        # global ValCommands
+        # ValCommands = 'OpenSite'
 
         markup = types.InlineKeyboardMarkup()
         item1 = types.InlineKeyboardButton("🎷JazzRadio🎷", callback_data='JazzRadio')
@@ -92,6 +106,41 @@ def OpenSite(message):
         markup.add(item3, item4)
         bot.send_message(message.chat.id,'SEND NAME SITE', reply_markup=markup)
 
+def can_access(path: str) -> bool:
+    """Check if we can access folder on network drive"""
+    try:
+        os.listdir(path)
+        return True
+    except PermissionError:
+        return False
+
+@bot.message_handler(commands=['open_folders_manager'])
+def Folders_manager(message):
+    global ValCommands,src,Error_permission
+    ValCommands = 'folders_manager'
+
+    if src == 'C://':
+        src = 'C:/'
+    
+    # dirt_folders = os.listdir(src)
+    folders = os.listdir(src)
+    # for iD in range(len(dirt_folders)):
+    #     if dirt_folders[iD] in '.':
+    #         if can_access(path=src+dirt_folders[iD]):
+    #             folders.append(dirt_folders[iD])
+
+    keyboard = types.ReplyKeyboardMarkup()
+    keyboard.row_width = 2
+
+    for i in range(0, len(folders)):
+        print(folders[i])
+        keyboard.add(types.KeyboardButton(folders[i]))
+        
+    if src == 'C:/':
+        keyboard.add(types.KeyboardButton('❌'))
+    else:
+        keyboard.add(types.KeyboardButton('👈'),types.KeyboardButton('❌'))
+    bot.send_message(message.chat.id, f'- {src} -', reply_markup=keyboard)
 
 @bot.callback_query_handler(func=lambda call:True)
 def callback_query(call):
@@ -170,10 +219,75 @@ def callback_query(call):
 
     except Exception as e:
         print(repr(e))
+
+
 @bot.message_handler(content_types=['text'])
 def text_all(message):
-    global ValCommands
-    if ValCommands == 'Open_program':
+    global ValCommands,src,Error_permission
+    if message.text == "🔄RESTART🔄":
+        RestartPc(message)
+    elif message.text == "📍OFF📍":
+        OffPc(message)
+    elif message.text == "🌐INTERNET🌐":
+        OpenSite(message)
+    elif message.text == "💻PROGRAM💻":
+        OpenProgram_and_Mp3(message)
+    elif message.text == "📦FOLDER_MANAGER📦":
+        Folders_manager(message)
+
+    elif ValCommands == 'folders_manager':
+        if message.text == '📦FOLDER_MANAGER📦':
+            pass
+        elif message.text == '❌':
+            bot.send_message(message.chat.id, f'- END SRC {src} -')
+            ValCommands = 'no_commands'
+
+            config.read(config_path)
+            src = config['Settings']['default_path']
+
+            send_start(message)
+        elif message.text == '👈':
+            src_list = src.split('/')
+            src_list.pop()
+            src_list.pop()
+            print(src_list)
+            for i in range(len(src_list)):
+                if i == 0:
+                    src = ''
+                src += src_list[i]  + '/'
+            Folders_manager(message)
+        elif '.txt' in message.text or '.ini' in message.text or '.md' in message.text:
+            print('-----text')
+            f = open(f'{src}{message.text}','r', encoding='utf-8')
+            bot.send_message(message.chat.id, f'- {message.text} -\n {f.read()}')
+        
+        elif '.exe' in message.text or '.lnk' in message.text or '.url' in message.text:
+            print('-----program')
+            os.system(f'start {src}{message.text}')
+            bot.send_message(message.chat.id, f'- OPEN {message.text} -')
+
+        elif '.png' in message.text or '.jpg' in message.text or '.webp' in message.text :
+            print('-----img')
+            bot.send_message(message.chat.id,f'- Идет загрузка файла {message.text} -')
+            bot.send_photo(message.chat.id, photo=open(f'{src}{message.text}', 'rb'))
+        
+        elif '.mp3' in message.text or '.wav' in message.text:
+            print('-----music')
+            bot.send_message(message.chat.id,f'- Идет загрузка файла {message.text} -')
+            bot.send_audio(message.chat.id, open(f'{src}{message.text}', 'rb'))
+            
+        elif '.js' in message.text or '.htm' in message.text or '.py' in message.text or '.css' in message.text or '.xml' in message.text or '.zip' in message.text or '.rar' in message.text or '.svg' in message.text or '.spec' in message.text or '.blend1' in message.text or '.sys' in message.text or '.DAT' in message.text or '.tmp' in message.text or '.log' in message.text:
+            bot.send_message(message.chat.id, f'- Этот формат файлов пока не поддерживается -')
+        else:
+            print(Error_permission)
+            if Error_permission == False:
+                print('-----folder')
+                src = src + message.text + '/'
+                Folders_manager(message)
+            else:
+                Folders_manager(message)
+
+    elif ValCommands == 'Open_program':
         HVal1 = message.text
         os.system(f'start "" "C:/Users/Евгений/Desktop/{HVal1}" ')
         ValCommands = 'no_commands'

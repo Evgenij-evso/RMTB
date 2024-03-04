@@ -1,2 +1,2 @@
-pyinstaller --noconsole --onefile -i "icon_bot.png" telegramBot.py
-pyinstaller --noconsole --onefile -i "icon.png" traySize.py
+pyinstaller --noconsole --onefile -i "img/icon_bot.png" teleaio.py
+pyinstaller --noconsole --onefile -i "img/icon.png" traySize.py

@@ -2,9 +2,11 @@ import wx.adv
 import wx
 import os
 import configparser
+from urllib import request
 
 config_path = 'C:/FESTASHKA/config.ini'
 config = configparser.ConfigParser()
+
 class BlackList(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title="Добавление в черный список")
@@ -81,8 +83,19 @@ TRAY_ICON = config['Settings']['path_tray_icon']
 PROCESS_NAME = config['Settings']['process_name']
 PATH_TELEGRAM_BOT = config['Settings']['path_telegram_bot']
 
-os.system('start ' + PATH_TELEGRAM_BOT)
+def internet_on():
+    try:
+        request.urlopen('http://google.com', timeout=1)
+        return True
+    except request.URLError as err: 
+        return False
 
+
+def init_start_bot():
+    if internet_on():
+        os.system('start ' + PATH_TELEGRAM_BOT)
+    else:
+        pass
 
 def create_menu_item(menu, label, func):
     item = wx.MenuItem(menu, -1, label)
@@ -133,4 +146,5 @@ def main():
 
 
 if __name__ == '__main__':
+    init_start_bot()
     main()
