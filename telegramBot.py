@@ -3,6 +3,7 @@ import telebot
 from telebot import types
 import datetime
 import configparser
+import keyboard
 config = configparser.ConfigParser()
 ValCommands = 'no_commands'
 config_path = 'C:/FESTASHKA/config.ini'
@@ -41,10 +42,13 @@ def send_start(message):
     item3 = types.KeyboardButton("🌐INTERNET🌐") 
     item4 = types.KeyboardButton("💻PROGRAM💻") 
     item5 = types.KeyboardButton("📦FOLDER_MANAGER📦") 
+    item6 = types.KeyboardButton("📔KEYBOARD_SHORTCUP📔") 
 
     markup.add(item1, item2)
     markup.add(item3, item4)
+    markup.add(item6)
     markup.add(item5)
+
     
     bot.send_message(message.chat.id,'Hello, I,m create this is bot, to see the commands write / or tap on the button',reply_markup=markup)
 
@@ -216,10 +220,28 @@ def callback_query(call):
 
                 markup1.add(programback)
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="SEND NAME PROGRAM", reply_markup=markup1)
-
+                
+            elif call.data == 'win+d':
+                keyboard.send("windows+d")
+            elif call.data == 'win+l':
+                keyboard.send("windows+l")
+            elif call.data == 'alt+tab':
+                keyboard.send("alt+tab")
+            elif call.data == 'alt+F4':
+                keyboard.send("alt+F4")
     except Exception as e:
         print(repr(e))
 
+@bot.message_handler(commands=['Keyboard_shortcup'])
+def Keyboard_shortcup(message):
+    markup = types.InlineKeyboardMarkup()
+    item_1 = types.InlineKeyboardButton('WIN + D', callback_data='win+d')
+    item_2 = types.InlineKeyboardButton('WIN + L', callback_data='win+l')
+    item_3 = types.InlineKeyboardButton('ALT + TAB', callback_data='alt+tab')
+    item_4 = types.InlineKeyboardButton('ALT + F4', callback_data='alt+F4')
+    markup.add(item_1,item_2)
+    markup.add(item_3,item_4)
+    bot.send_message(message.chat.id, 'KEYBOARD_SHORTCUP',reply_markup=markup)
 
 @bot.message_handler(content_types=['text'])
 def text_all(message):
@@ -230,6 +252,8 @@ def text_all(message):
         OffPc(message)
     elif message.text == "🌐INTERNET🌐":
         OpenSite(message)
+    elif message.text == "📔KEYBOARD_SHORTCUP📔":
+        Keyboard_shortcup(message)
     elif message.text == "💻PROGRAM💻":
         OpenProgram_and_Mp3(message)
     elif message.text == "📦FOLDER_MANAGER📦":
