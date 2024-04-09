@@ -4,7 +4,7 @@ import datetime
 import configparser
 import os
 import subprocess 
-
+import keyboard
 
 
 
@@ -38,10 +38,12 @@ async def send_start(message: types.Message):
     item3 = types.KeyboardButton("🌐INTERNET🌐") 
     item4 = types.KeyboardButton("💻PROGRAM💻") 
     item5 = types.KeyboardButton("📦FOLDER_MANAGER📦") 
+    item6 = types.KeyboardButton("📔KEYBOARD_SHORTCUP📔") 
 
     markup.add(item1, item2)
     markup.add(item3, item4)
     markup.add(item5)
+    markup.add(item6)
 
     await bot.send_message(message.chat.id,'Hello, I,m create this is bot, to see the commands write / or tap on the button',reply_markup=markup)
 
@@ -124,6 +126,34 @@ async def Folders_manager(message):
             keyboard.add(types.KeyboardButton('👈'),types.KeyboardButton('📁'),types.KeyboardButton('❌'))
         await bot.send_message(message.chat.id, f'- {src} -', reply_markup=keyboard)
 
+@dp.message_handler(commands=['Keyboard_shortcup'])
+async def Keyboard_shortcup(message):
+    if await BlackListCheck(message):
+        markup = types.InlineKeyboardMarkup()
+        item_1 = types.InlineKeyboardButton('WIN + D', callback_data='win+d')
+        item_2 = types.InlineKeyboardButton('WIN + TAB', callback_data='win+tab')
+        item_3 = types.InlineKeyboardButton('ALT + TAB', callback_data='alt+tab')
+        item_4 = types.InlineKeyboardButton('ALT + F4', callback_data='alt+F4')
+        markup.add(item_1,item_2)
+        markup.add(item_3,item_4)
+        await bot.send_message(message.chat.id, 'KEYBOARD_SHORTCUP',reply_markup=markup)
+
+@dp.callback_query_handler(lambda c: c.data == "win+d")
+async def win_d(call: types.CallbackQuery):
+    keyboard.send('windows+d')
+
+@dp.callback_query_handler(lambda c: c.data == "win+tab")
+async def win_tab(call: types.CallbackQuery):
+    keyboard.send('windows+tab')
+
+@dp.callback_query_handler(lambda c: c.data == "alt+tab")
+async def alt_tab(call: types.CallbackQuery):
+    keyboard.send('alt+tab')
+
+@dp.callback_query_handler(lambda c: c.data == "alt+F4")
+async def alt_F4(call: types.CallbackQuery):
+    keyboard.send('alt+F4')
+
 @dp.message_handler(content_types=['text'])
 async def text(message: types.Message):
     global ValCommands,src
@@ -138,6 +168,8 @@ async def text(message: types.Message):
         await OpenProgram_and_Mp3(message)
     elif message.text == '📦FOLDER_MANAGER📦':
         await Folders_manager(message)
+    elif message.text == '📔KEYBOARD_SHORTCUP📔':
+        await Keyboard_shortcup(message)
 
     elif ValCommands == 'folders_manager':
         if message.text == '📦FOLDER_MANAGER📦':
